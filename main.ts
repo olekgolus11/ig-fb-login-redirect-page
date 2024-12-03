@@ -1,62 +1,26 @@
 import { Application, Router } from "https://deno.land/x/oak@v17.1.3/mod.ts";
+import FacebookService from "./FacebookService.ts";
 
 const app = new Application();
 const router = new Router();
 
 // Facebook Login Endpoint
 router.get("/facebook-login", async (ctx) => {
+    const fbService = new FacebookService(
+        Deno.env.get("APP_ID"),
+        Deno.env.get("APP_SECRET"),
+        Deno.env.get("REDIRECT_URI"),
+    );
     // Handle Facebook OAuth redirect
-    console.log(ctx.request.url.searchParams);
-    const code = ctx.request.url.searchParams.get("code");
-    if (!code) {
-        ctx.response.body = "Error: No code provided";
-        return;
-    }
-    console.log(`Code: ${code}`);
+    const code = fbService.getCodeFromSearchParams(
+        ctx.request.url.searchParams,
+    );
 
     // Exchange code for access token
-    let shortLivedTokenData;
-    try {
-        const shortLivedTokenResponse = await fetch(
-            "https://graph.facebook.com/v21.0/oauth/access_token",
-            {
-                method: "POST",
-                body: new URLSearchParams({
-                    client_id: Deno.env.get("APP_ID")!,
-                    client_secret: Deno.env.get("APP_SECRET")!,
-                    code: code,
-                    redirect_uri: Deno.env.get("REDIRECT_URI")!,
-                }),
-            },
-        );
-        shortLivedTokenData = await shortLivedTokenResponse.json();
-        console.log(`Token Data: ${JSON.stringify(shortLivedTokenData)}`);
-    } catch (error) {
-        console.log(error);
-    }
-
-    // Exchange short-lived token for long-lived token
-    let longLivedTokenData;
-    try {
-        const longLivedTokenResponse = await fetch(
-            "https://graph.facebook.com/v21.0/oauth/access_token",
-            {
-                method: "POST",
-                body: new URLSearchParams({
-                    client_id: Deno.env.get("APP_ID")!,
-                    client_secret: Deno.env.get("APP_SECRET")!,
-                    grant_type: "fb_exchange_token",
-                    fb_exchange_token: shortLivedTokenData.access_token,
-                }),
-            },
-        );
-        longLivedTokenData = await longLivedTokenResponse.json();
-        console.log(
-            `Long Lived Token Data: ${JSON.stringify(longLivedTokenData)}`,
-        );
-    } catch (error) {
-        console.log(error);
-    }
+    const shortLivedTokenData = await fbService.getShortLivedTokenData(code);
+    const longLivedTokenData = await fbService.getLongLivedTokenData(
+        shortLivedTokenData.access_token,
+    );
 
     // Fetch user info
     let userData;
@@ -69,8 +33,14 @@ router.get("/facebook-login", async (ctx) => {
     } catch (error) {
         console.log(error);
     }
+    let instagramAccountInfo = await fbService.getInstagramAccountId(
+        longLivedTokenData.access_token,
+    );
 
-    ctx.response.body = userData;
+    ctx.response.body = {
+        ...userData,
+        ...instagramAccountInfo,
+    };
 });
 
 app.use(router.routes());
