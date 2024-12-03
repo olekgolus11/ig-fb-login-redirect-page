@@ -1,4 +1,6 @@
 import {
+    FacebookConnectedPageData,
+    InstagramBusinessAccountData,
     LongLivedAccessTokenData,
     ShortLivedAccessTokenData,
 } from "./types.ts";
@@ -80,26 +82,45 @@ class FacebookService {
         }
     }
 
-    async getInstagramAccountId(longLivedAccessToken: string) {
-        const response = await fetch(
+    /**
+     * @param longLivedAccessToken
+     * @returns Instagram Account IDs
+     * @link https://superface.ai/blog/instagram-account-id
+     */
+    async getInstagramAccountIds(longLivedAccessToken: string) {
+        const accountsResponse = await fetch(
             `https://graph.facebook.com/v21.0/me/accounts?
           access_token=${longLivedAccessToken}`,
         );
 
-        const accountsData = await response.json();
+        const accountsData = await accountsResponse.json();
         console.log(`Accounts Data: ${JSON.stringify(accountsData)}`);
 
         // Find the page connected to Instagram
-        const instagramPage = accountsData.data.find((page: any) =>
-            page.connected_instagram_account
-        );
-        console.log(`Instagram Page: ${JSON.stringify(instagramPage)}`);
+        const facebookConnectedPages = accountsData
+            .data as FacebookConnectedPageData[];
 
-        return {
-            pageId: instagramPage.id,
-            pageAccessToken: instagramPage.access_token,
-            instagramAccountId: instagramPage.connected_instagram_account,
-        };
+        console.log(
+            `Instagram Page: ${JSON.stringify(facebookConnectedPages)}`,
+        );
+
+        const instagramAccountIds = await Promise.all(
+            facebookConnectedPages.map(async (page) => {
+                const instagramAccountResponse = await fetch(
+                    `https://graph.facebook.com/v21.0/${page.id}?fields=instagram_business_account&access_token=${page.access_token}`,
+                );
+                const instagramAccountData = await instagramAccountResponse
+                    .json() as InstagramBusinessAccountData;
+                console.log(
+                    `Instagram Account Data: ${
+                        JSON.stringify(instagramAccountData)
+                    }`,
+                );
+                return instagramAccountData.instagram_business_account.id;
+            }),
+        );
+
+        return instagramAccountIds;
     }
 }
 

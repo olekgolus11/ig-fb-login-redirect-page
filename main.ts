@@ -33,7 +33,7 @@ router.get("/facebook-login", async (ctx) => {
     } catch (error) {
         console.log(error);
     }
-    let instagramAccountInfo = await fbService.getInstagramAccountId(
+    let instagramAccountInfo = await fbService.getInstagramAccountIds(
         longLivedTokenData.access_token,
     );
 
