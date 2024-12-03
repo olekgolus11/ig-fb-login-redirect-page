@@ -81,10 +81,13 @@ class FacebookService {
     }
 
     async getInstagramAccountId(longLivedAccessToken: string) {
-        const response = await fetch(`https://graph.facebook.com/me/accounts?
-          access_token=${longLivedAccessToken}`);
+        const response = await fetch(
+            `https://graph.facebook.com/v21.0/me/accounts?
+          access_token=${longLivedAccessToken}`,
+        );
 
         const accountsData = await response.json();
+        console.log(`Accounts Data: ${JSON.stringify(accountsData)}`);
 
         // Find the page connected to Instagram
         const instagramPage = accountsData.data.find((page: any) =>
