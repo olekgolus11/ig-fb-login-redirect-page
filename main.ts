@@ -15,9 +15,9 @@ router.get("/facebook-login", async (ctx) => {
     console.log(`Code: ${code}`);
 
     // Exchange code for access token
-    let tokenData;
+    let shortLivedTokenData;
     try {
-        const tokenResponse = await fetch(
+        const shortLivedTokenResponse = await fetch(
             "https://graph.facebook.com/v21.0/oauth/access_token",
             {
                 method: "POST",
@@ -29,10 +29,37 @@ router.get("/facebook-login", async (ctx) => {
                 }),
             },
         );
-        console.log(`Token Response: ${JSON.stringify(tokenResponse)}`);
+        console.log(
+            `Token Response: ${JSON.stringify(shortLivedTokenResponse)}`,
+        );
+        shortLivedTokenData = await shortLivedTokenResponse.json();
+        console.log(`Token Data: ${JSON.stringify(shortLivedTokenData)}`);
+    } catch (error) {
+        console.log(error);
+    }
 
-        tokenData = await tokenResponse.json();
-        console.log(`Token Data: ${JSON.stringify(tokenData)}`);
+    // Exchange short-lived token for long-lived token
+    let longLivedTokenData;
+    try {
+        const longLivedTokenResponse = await fetch(
+            "https://graph.facebook.com/v21.0/oauth/access_token",
+            {
+                method: "GET",
+                client_id: Deno.env.get("APP_ID")!,
+                client_secret: Deno.env.get("APP_SECRET")!,
+                grant_type: "fb_exchange_token",
+                fb_exchange_token: shortLivedTokenData.access_token,
+            },
+        );
+        console.log(
+            `Long Lived Token Response: ${
+                JSON.stringify(longLivedTokenResponse)
+            }`,
+        );
+        longLivedTokenData = await longLivedTokenResponse.json();
+        console.log(
+            `Long Lived Token Data: ${JSON.stringify(longLivedTokenData)}`,
+        );
     } catch (error) {
         console.log(error);
     }
@@ -41,7 +68,7 @@ router.get("/facebook-login", async (ctx) => {
     let userData;
     try {
         const userResponse = await fetch(
-            `https://graph.facebook.com/me?fields=name,email&access_token=${tokenData.access_token}`,
+            `https://graph.facebook.com/me?fields=name,email&access_token=${longLivedTokenData.access_token}`,
         );
         console.log(`User Response: ${JSON.stringify(userResponse)}`);
         userData = await userResponse.json();
