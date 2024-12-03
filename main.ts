@@ -7,7 +7,11 @@ const router = new Router();
 router.get("/facebook-login", async (ctx) => {
     // Handle Facebook OAuth redirect
     console.log(ctx.request.url.searchParams);
-    const { code } = ctx.request.url.searchParams;
+    const code = ctx.request.url.searchParams.get("code");
+    if (!code) {
+        ctx.response.body = "Error: No code provided";
+        return;
+    }
     console.log(`Code: ${code}`);
 
     // Exchange code for access token
