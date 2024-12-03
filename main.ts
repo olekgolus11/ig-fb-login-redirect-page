@@ -14,10 +14,10 @@ router.get("/facebook-login", async (ctx) => {
         {
             method: "POST",
             body: new URLSearchParams({
-                client_id: "YOUR_APP_ID",
-                client_secret: "YOUR_APP_SECRET",
+                client_id: Deno.env.get("APP_ID")!,
+                client_secret: Deno.env.get("APP_SECRET")!,
                 code: code,
-                redirect_uri: "YOUR_REDIRECT_URI",
+                redirect_uri: Deno.env.get("REDIRECT_URI")!,
             }),
         },
     );
