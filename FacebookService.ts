@@ -90,6 +90,7 @@ class FacebookService {
         const instagramPage = accountsData.data.find((page: any) =>
             page.connected_instagram_account
         );
+        console.log(`Instagram Page: ${JSON.stringify(instagramPage)}`);
 
         return {
             pageId: instagramPage.id,
