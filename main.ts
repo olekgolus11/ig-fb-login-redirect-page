@@ -6,29 +6,46 @@ const router = new Router();
 // Facebook Login Endpoint
 router.get("/facebook-login", async (ctx) => {
     // Handle Facebook OAuth redirect
-    const { code } = ctx.request.url.searchParams;
+    const { code } = ctx.request.url.searchParams as URLSearchParams & {
+        code: string;
+    };
+    console.log(`Code: ${code}`);
 
     // Exchange code for access token
-    const tokenResponse = await fetch(
-        "https://graph.facebook.com/v21.0/oauth/access_token",
-        {
-            method: "POST",
-            body: new URLSearchParams({
-                client_id: Deno.env.get("APP_ID")!,
-                client_secret: Deno.env.get("APP_SECRET")!,
-                code: code,
-                redirect_uri: Deno.env.get("REDIRECT_URI")!,
-            }),
-        },
-    );
+    let tokenData;
+    try {
+        const tokenResponse = await fetch(
+            "https://graph.facebook.com/v21.0/oauth/access_token",
+            {
+                method: "POST",
+                body: new URLSearchParams({
+                    client_id: Deno.env.get("APP_ID")!,
+                    client_secret: Deno.env.get("APP_SECRET")!,
+                    code: code,
+                    redirect_uri: Deno.env.get("REDIRECT_URI")!,
+                }),
+            },
+        );
+        console.log(`Token Response: ${tokenResponse}`);
 
-    const tokenData = await tokenResponse.json();
+        tokenData = await tokenResponse.json();
+        console.log(`Token Data: ${tokenData}`);
+    } catch (error) {
+        console.log(error);
+    }
 
     // Fetch user info
-    const userResponse = await fetch(
-        `https://graph.facebook.com/me?fields=name,email&access_token=${tokenData.access_token}`,
-    );
-    const userData = await userResponse.json();
+    let userData;
+    try {
+        const userResponse = await fetch(
+            `https://graph.facebook.com/me?fields=name,email&access_token=${tokenData.access_token}`,
+        );
+        console.log(`User Response: ${userResponse}`);
+        userData = await userResponse.json();
+        console.log(`User Data: ${userData}`);
+    } catch (error) {
+        console.log(error);
+    }
 
     ctx.response.body = userData;
 });
