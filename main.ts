@@ -29,9 +29,6 @@ router.get("/facebook-login", async (ctx) => {
                 }),
             },
         );
-        console.log(
-            `Token Response: ${JSON.stringify(shortLivedTokenResponse)}`,
-        );
         shortLivedTokenData = await shortLivedTokenResponse.json();
         console.log(`Token Data: ${JSON.stringify(shortLivedTokenData)}`);
     } catch (error) {
@@ -45,16 +42,13 @@ router.get("/facebook-login", async (ctx) => {
             "https://graph.facebook.com/v21.0/oauth/access_token",
             {
                 method: "GET",
-                client_id: Deno.env.get("APP_ID")!,
-                client_secret: Deno.env.get("APP_SECRET")!,
-                grant_type: "fb_exchange_token",
-                fb_exchange_token: shortLivedTokenData.access_token,
+                body: new URLSearchParams({
+                    client_id: Deno.env.get("APP_ID")!,
+                    client_secret: Deno.env.get("APP_SECRET")!,
+                    grant_type: "fb_exchange_token",
+                    fb_exchange_token: shortLivedTokenData.access_token,
+                }),
             },
-        );
-        console.log(
-            `Long Lived Token Response: ${
-                JSON.stringify(longLivedTokenResponse)
-            }`,
         );
         longLivedTokenData = await longLivedTokenResponse.json();
         console.log(
@@ -70,7 +64,6 @@ router.get("/facebook-login", async (ctx) => {
         const userResponse = await fetch(
             `https://graph.facebook.com/me?fields=name,email&access_token=${longLivedTokenData.access_token}`,
         );
-        console.log(`User Response: ${JSON.stringify(userResponse)}`);
         userData = await userResponse.json();
         console.log(`User Data: ${JSON.stringify(userData)}`);
     } catch (error) {
