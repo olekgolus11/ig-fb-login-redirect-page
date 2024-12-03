@@ -6,9 +6,8 @@ const router = new Router();
 // Facebook Login Endpoint
 router.get("/facebook-login", async (ctx) => {
     // Handle Facebook OAuth redirect
-    const { code } = ctx.request.url.searchParams as URLSearchParams & {
-        code: string;
-    };
+    console.log(ctx.request.url.searchParams);
+    const { code } = ctx.request.url.searchParams;
     console.log(`Code: ${code}`);
 
     // Exchange code for access token
@@ -26,10 +25,10 @@ router.get("/facebook-login", async (ctx) => {
                 }),
             },
         );
-        console.log(`Token Response: ${tokenResponse}`);
+        console.log(`Token Response: ${JSON.stringify(tokenResponse)}`);
 
         tokenData = await tokenResponse.json();
-        console.log(`Token Data: ${tokenData}`);
+        console.log(`Token Data: ${JSON.stringify(tokenData)}`);
     } catch (error) {
         console.log(error);
     }
@@ -40,9 +39,9 @@ router.get("/facebook-login", async (ctx) => {
         const userResponse = await fetch(
             `https://graph.facebook.com/me?fields=name,email&access_token=${tokenData.access_token}`,
         );
-        console.log(`User Response: ${userResponse}`);
+        console.log(`User Response: ${JSON.stringify(userResponse)}`);
         userData = await userResponse.json();
-        console.log(`User Data: ${userData}`);
+        console.log(`User Data: ${JSON.stringify(userData)}`);
     } catch (error) {
         console.log(error);
     }
