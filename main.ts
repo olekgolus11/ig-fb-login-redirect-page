@@ -41,7 +41,7 @@ router.get("/facebook-login", async (ctx) => {
         const longLivedTokenResponse = await fetch(
             "https://graph.facebook.com/v21.0/oauth/access_token",
             {
-                method: "GET",
+                method: "POST",
                 body: new URLSearchParams({
                     client_id: Deno.env.get("APP_ID")!,
                     client_secret: Deno.env.get("APP_SECRET")!,
