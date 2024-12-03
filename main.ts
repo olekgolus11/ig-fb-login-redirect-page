@@ -33,13 +33,23 @@ router.get("/facebook-login", async (ctx) => {
     } catch (error) {
         console.log(error);
     }
-    let instagramAccountInfo = await fbService.getInstagramAccountIds(
+
+    const instagramAccountInfo = await fbService.getInstagramAccountIds(
         longLivedTokenData.access_token,
+    );
+
+    const instagramPostsData = await Promise.all(
+        instagramAccountInfo.map((account) => {
+            return fbService.getInstagramPosts(
+                account.id,
+                longLivedTokenData.access_token,
+            );
+        }),
     );
 
     ctx.response.body = {
         ...userData,
-        ...instagramAccountInfo,
+        ...instagramPostsData,
     };
 });
 

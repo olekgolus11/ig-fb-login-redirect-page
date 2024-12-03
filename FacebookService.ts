@@ -116,11 +116,23 @@ class FacebookService {
                         JSON.stringify(instagramAccountData)
                     }`,
                 );
-                return instagramAccountData.instagram_business_account.id;
+                return {
+                    id: instagramAccountData.instagram_business_account.id,
+                    access_token: page.access_token,
+                };
             }),
         );
 
         return instagramAccountIds;
+    }
+
+    async getInstagramPosts(instagramAccountId: string, accessToken: string) {
+        const postsResponse = await fetch(
+            `https://graph.facebook.com/v21.0/${instagramAccountId}/media?fields=id,caption,media_url&access_token=${accessToken}`,
+        );
+        const postsData = await postsResponse.json();
+        console.log(`Posts Data: ${JSON.stringify(postsData)}`);
+        return;
     }
 }
 
