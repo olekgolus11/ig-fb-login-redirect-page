@@ -132,7 +132,7 @@ class FacebookService {
         );
         const postsData = await postsResponse.json();
         console.log(`Posts Data: ${JSON.stringify(postsData)}`);
-        return;
+        return postsData;
     }
 }
 
