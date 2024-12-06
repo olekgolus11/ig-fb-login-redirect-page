@@ -172,7 +172,7 @@ class FacebookService {
         );
         const igHashTagIdData = await igHashTagSearchResponse.json();
         console.log(`HashTag Data: ${JSON.stringify(igHashTagIdData)}`);
-        const igHashTagId = igHashTagIdData[0].id;
+        const igHashTagId = igHashTagIdData.data[0].id;
         console.log(`HashTag "${hashTag}" ID: ${igHashTagId}`);
 
         switch (searchType) {
