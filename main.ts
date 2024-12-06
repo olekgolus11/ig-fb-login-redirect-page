@@ -6,55 +6,117 @@ const router = new Router();
 
 // Facebook Login Endpoint
 router.get("/facebook-login", async (ctx) => {
-    const fbService = new FacebookService(
-        Deno.env.get("APP_ID"),
-        Deno.env.get("APP_SECRET"),
-        Deno.env.get("REDIRECT_URI"),
-    );
-    // Handle Facebook OAuth redirect
-    const code = fbService.getCodeFromSearchParams(
-        ctx.request.url.searchParams,
-    );
-
-    // Exchange code for access token
-    const shortLivedTokenData = await fbService.getShortLivedTokenData(code);
-    const longLivedTokenData = await fbService.getLongLivedTokenData(
-        shortLivedTokenData.access_token,
-    );
-
-    // Fetch user info
-    let userData;
     try {
-        const userResponse = await fetch(
-            `https://graph.facebook.com/me?fields=name,email&access_token=${longLivedTokenData.access_token}`,
+        const fbService = new FacebookService(
+            Deno.env.get("APP_ID"),
+            Deno.env.get("APP_SECRET"),
+            Deno.env.get("REDIRECT_URI"),
         );
-        userData = await userResponse.json();
-        console.log(`User Data: ${JSON.stringify(userData)}`);
+        const code = fbService.getCodeFromSearchParams(
+            ctx.request.url.searchParams,
+        );
+
+        const shortLivedTokenData = await fbService.getShortLivedTokenData(
+            code,
+        );
+        const longLivedTokenData = await fbService.getLongLivedTokenData(
+            shortLivedTokenData.access_token,
+        );
+
+        const userData = await fbService.getUserDataFromToken(
+            longLivedTokenData.access_token,
+        );
         await fbService.saveUserData({
             ...userData,
             access_token: longLivedTokenData.access_token,
         });
+
+        ctx.response.body = {
+            ...userData,
+        };
     } catch (error) {
         console.log(error);
+        ctx.response.body = `Error logging in with Facebook: ${
+            JSON.stringify(error)
+        }`;
     }
+});
 
-    const instagramAccountInfo = await fbService.getInstagramAccountIds(
-        longLivedTokenData.access_token,
-    );
+// Get Instagram Posts Endpoint
+router.get("/instagram-posts", async (ctx) => {
+    try {
+        const fbService = new FacebookService(
+            Deno.env.get("APP_ID"),
+            Deno.env.get("APP_SECRET"),
+            Deno.env.get("REDIRECT_URI"),
+        );
+        const userId = fbService.getUserIdFromSearchParams(
+            ctx.request.url.searchParams,
+        );
+        const userData = await fbService.getUserDataFromUserId(userId);
+        const instagramAccountInfo = await fbService.getInstagramAccountIds(
+            userData.access_token,
+        );
+        const instagramPostsData = await Promise.all(
+            instagramAccountInfo.map((account) => {
+                return fbService.getInstagramPosts(
+                    account.id,
+                    userData.access_token,
+                );
+            }),
+        );
 
-    const instagramPostsData = await Promise.all(
-        instagramAccountInfo.map((account) => {
-            return fbService.getInstagramPosts(
-                account.id,
-                longLivedTokenData.access_token,
-            );
-        }),
-    );
+        ctx.response.body = {
+            ...instagramPostsData,
+        };
+    } catch (error) {
+        console.log(error);
+        ctx.response.body = `Error getting Instagram posts: ${
+            JSON.stringify(error)
+        }`;
+    }
+});
 
-    ctx.response.body = {
-        ...userData,
-        ...instagramPostsData,
-    };
+// Search Instagram Posts By Hashtag Endpoint
+router.get("/instagram-posts-by-hashtag", async (ctx) => {
+    try {
+        const fbService = new FacebookService(
+            Deno.env.get("APP_ID"),
+            Deno.env.get("APP_SECRET"),
+            Deno.env.get("REDIRECT_URI"),
+        );
+        const userId = fbService.getUserIdFromSearchParams(
+            ctx.request.url.searchParams,
+        );
+        const query = fbService.getQueryFromSearchParams(
+            ctx.request.url.searchParams,
+        );
+        const searchType = fbService.getHashTagSearchTypeFromSearchParams(
+            ctx.request.url.searchParams,
+        );
+        const userData = await fbService.getUserDataFromUserId(userId);
+        const instagramAccountInfo = await fbService.getInstagramAccountIds(
+            userData.access_token,
+        );
+        const instagramPostsData = await Promise.all(
+            instagramAccountInfo.map((account) => {
+                return fbService.getInstagramMediaByHashTag(
+                    query,
+                    account,
+                    searchType,
+                );
+            }),
+        );
+
+        ctx.response.body = {
+            ...instagramPostsData,
+        };
+    } catch (error) {
+        console.log(error);
+        ctx.response.body = `Error getting Instagram posts by hashtag: ${
+            JSON.stringify(error)
+        }`;
+    }
 });
 
 app.use(router.routes());

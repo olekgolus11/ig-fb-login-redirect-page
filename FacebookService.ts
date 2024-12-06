@@ -1,6 +1,7 @@
 import {
     FacebookConnectedPageData,
     InstagramBusinessAccountData,
+    InstagramUserData,
     LongLivedAccessTokenData,
     ShortLivedAccessTokenData,
     UserData,
@@ -27,6 +28,35 @@ class FacebookService {
             throw new Error("Error: No code provided");
         }
         return code;
+    }
+
+    getUserIdFromSearchParams(searchParams: URLSearchParams): string {
+        const userId = searchParams.get("user_id");
+        if (!userId) {
+            console.error(searchParams);
+            throw new Error("Error: No user_id provided");
+        }
+        return userId;
+    }
+
+    getQueryFromSearchParams(searchParams: URLSearchParams): string {
+        const query = searchParams.get("q");
+        if (!query) {
+            console.error(searchParams);
+            throw new Error("Error: No query provided");
+        }
+        return query;
+    }
+
+    getHashTagSearchTypeFromSearchParams(
+        searchParams: URLSearchParams,
+    ): "recent" | "top" | null {
+        const searchType = searchParams.get("type") as "recent" | "top" | null;
+        if (!searchType) {
+            console.error(searchParams);
+            return null;
+        }
+        return searchType;
     }
 
     async getShortLivedTokenData(
@@ -88,7 +118,9 @@ class FacebookService {
      * @returns Instagram Account IDs
      * @link https://superface.ai/blog/instagram-account-id
      */
-    async getInstagramAccountIds(longLivedAccessToken: string) {
+    async getInstagramAccountIds(
+        longLivedAccessToken: string,
+    ): Promise<InstagramUserData[]> {
         const accountsResponse = await fetch(
             `https://graph.facebook.com/v21.0/me/accounts?
           access_token=${longLivedAccessToken}`,
@@ -127,10 +159,64 @@ class FacebookService {
         return instagramAccountIds;
     }
 
+    async getInstagramMediaByHashTag(
+        hashTag: string,
+        userData: InstagramUserData,
+        searchType: "recent" | "top" | null = "recent",
+    ) {
+        const igHashTagSearchResponse = await fetch(
+            `https://graph.facebook.com/v21.0/ig_hashtag_search?q=${hashTag}&user_id=${userData.id}access_token=${userData.access_token}`,
+        );
+        const igHashTagIdData = await igHashTagSearchResponse.json();
+        const igHashTagId = igHashTagIdData[0].id;
+        console.log(`HashTag "${hashTag}" ID: ${igHashTagId}`);
+
+        switch (searchType) {
+            case "recent": {
+                const igRecentMediaResponse = await fetch(
+                    `https://graph.facebook.com/v21.0/${igHashTagId}/recent_media?user_id=${userData.id}&fields=caption,like_count,media_url&access_token=${userData.access_token}`,
+                );
+                const igRecentMediaData = await igRecentMediaResponse.json();
+                console.log(
+                    `Recent Media: ${JSON.stringify(igRecentMediaData)}`,
+                );
+                return igRecentMediaData;
+            }
+            case "top": {
+                const igTopMediaResponse = await fetch(
+                    `https://graph.facebook.com/v21.0/${igHashTagId}/top_media?access_token=${userData.access_token}`,
+                );
+                const igTopMediaData = await igTopMediaResponse.json();
+                console.log(`Top Media: ${JSON.stringify(igTopMediaData)}`);
+                return igTopMediaData;
+            }
+            default:
+                throw new Error("Invalid search type");
+        }
+    }
+
     async saveUserData(userData: UserData) {
         const kv = await Deno.openKv();
         await kv.set(["ig_users", userData.id], userData);
         console.log(`User saved: ${JSON.stringify(userData)}`);
+    }
+
+    async getUserDataFromToken(longLivedAccessToken: string) {
+        const userResponse = await fetch(
+            `https://graph.facebook.com/me?fields=name,email&access_token=${longLivedAccessToken}`,
+        );
+        const userData = await userResponse.json();
+        console.log(`User Data: ${JSON.stringify(userData)}`);
+        return userData;
+    }
+
+    async getUserDataFromUserId(userId: string): Promise<UserData> {
+        const kv = await Deno.openKv();
+        const userData = await kv.get<UserData>(["ig_users", userId]);
+        if (!userData.value) {
+            throw new Error("Error: User not found");
+        }
+        return userData.value;
     }
 
     async getInstagramPosts(instagramAccountId: string, accessToken: string) {

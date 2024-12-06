@@ -35,3 +35,8 @@ export interface UserData {
     access_token: string;
     id: string;
 }
+
+export interface InstagramUserData {
+    id: string;
+    access_token: string;
+}
