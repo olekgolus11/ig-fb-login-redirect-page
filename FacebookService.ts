@@ -164,6 +164,9 @@ class FacebookService {
         userData: InstagramUserData,
         searchType: "recent" | "top" | null = "recent",
     ) {
+        console.log(
+            `https://graph.facebook.com/v21.0/ig_hashtag_search?q=${hashTag}&user_id=${userData.id}access_token=${userData.access_token}`,
+        );
         const igHashTagSearchResponse = await fetch(
             `https://graph.facebook.com/v21.0/ig_hashtag_search?q=${hashTag}&user_id=${userData.id}access_token=${userData.access_token}`,
         );
