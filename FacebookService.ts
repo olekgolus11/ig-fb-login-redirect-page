@@ -3,6 +3,7 @@ import {
     InstagramBusinessAccountData,
     LongLivedAccessTokenData,
     ShortLivedAccessTokenData,
+    UserData,
 } from "./types.ts";
 
 class FacebookService {
@@ -124,6 +125,12 @@ class FacebookService {
         );
 
         return instagramAccountIds;
+    }
+
+    async saveUserData(userData: UserData) {
+        const kv = await Deno.openKv();
+        await kv.set(["ig_users", userData.id], userData);
+        console.log(`User saved: ${JSON.stringify(userData)}`);
     }
 
     async getInstagramPosts(instagramAccountId: string, accessToken: string) {

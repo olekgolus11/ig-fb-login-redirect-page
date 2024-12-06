@@ -30,6 +30,10 @@ router.get("/facebook-login", async (ctx) => {
         );
         userData = await userResponse.json();
         console.log(`User Data: ${JSON.stringify(userData)}`);
+        await fbService.saveUserData({
+            ...userData,
+            access_token: longLivedTokenData.access_token,
+        });
     } catch (error) {
         console.log(error);
     }

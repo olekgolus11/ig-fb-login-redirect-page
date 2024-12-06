@@ -28,3 +28,10 @@ export interface InstagramBusinessAccountData {
     };
     id: string;
 }
+
+export interface UserData {
+    name: string;
+    email: string;
+    access_token: string;
+    id: string;
+}
