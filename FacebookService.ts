@@ -165,10 +165,10 @@ class FacebookService {
         searchType: "recent" | "top" | null = "recent",
     ) {
         console.log(
-            `https://graph.facebook.com/v21.0/ig_hashtag_search?q=${hashTag}&user_id=${userData.id}access_token=${userData.access_token}`,
+            `https://graph.facebook.com/v21.0/ig_hashtag_search?q=${hashTag}&user_id=${userData.id}&access_token=${userData.access_token}`,
         );
         const igHashTagSearchResponse = await fetch(
-            `https://graph.facebook.com/v21.0/ig_hashtag_search?q=${hashTag}&user_id=${userData.id}access_token=${userData.access_token}`,
+            `https://graph.facebook.com/v21.0/ig_hashtag_search?q=${hashTag}&user_id=${userData.id}&access_token=${userData.access_token}`,
         );
         const igHashTagIdData = await igHashTagSearchResponse.json();
         console.log(`HashTag Data: ${JSON.stringify(igHashTagIdData)}`);
@@ -188,7 +188,7 @@ class FacebookService {
             }
             case "top": {
                 const igTopMediaResponse = await fetch(
-                    `https://graph.facebook.com/v21.0/${igHashTagId}/top_media?access_token=${userData.access_token}`,
+                    `https://graph.facebook.com/v21.0/${igHashTagId}/top_media?user_id=${userData.id}&fields=caption,like_count,media_url&access_token=${userData.access_token}`,
                 );
                 const igTopMediaData = await igTopMediaResponse.json();
                 console.log(`Top Media: ${JSON.stringify(igTopMediaData)}`);
