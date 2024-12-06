@@ -168,6 +168,7 @@ class FacebookService {
             `https://graph.facebook.com/v21.0/ig_hashtag_search?q=${hashTag}&user_id=${userData.id}access_token=${userData.access_token}`,
         );
         const igHashTagIdData = await igHashTagSearchResponse.json();
+        console.log(`HashTag Data: ${JSON.stringify(igHashTagIdData)}`);
         const igHashTagId = igHashTagIdData[0].id;
         console.log(`HashTag "${hashTag}" ID: ${igHashTagId}`);
 
