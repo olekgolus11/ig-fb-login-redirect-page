@@ -246,24 +246,34 @@ class FacebookService {
         if (withInsights) {
             const postsWithInsights = await Promise.all(
                 postsData.data.map(async (post: any) => {
-                    const insightsResponse = await fetch(
-                        `https://graph.facebook.com/v21.0/${post.id}/insights?metric=likes,impressions,reach,comments,shares,total_interactions,follows,profile_visits,saved&access_token=${accessToken}`,
-                    );
-                    const insights = (await insightsResponse.json())
-                        .data as InstagramInsight[];
-                    const insightsData = insights.map((insight) => (
-                        {
-                            metric: insight.title,
-                            value: insight.values[0].value,
-                        }
-                    ));
-                    console.log(
-                        `Insights Data: ${JSON.stringify(insightsData)}`,
-                    );
-                    return {
-                        ...post,
-                        insights: insightsData,
-                    };
+                    try {
+                        const insightsResponse = await fetch(
+                            `https://graph.facebook.com/v21.0/${post.id}/insights?metric=likes,impressions,reach,comments,shares,total_interactions,follows,profile_visits,saved&access_token=${accessToken}`,
+                        );
+                        const insights = (await insightsResponse.json())
+                            .data as InstagramInsight[];
+                        const insightsData = insights.map((insight) => (
+                            {
+                                metric: insight.title,
+                                value: insight.values[0].value,
+                            }
+                        ));
+                        console.log(
+                            `Insights Data: ${JSON.stringify(insightsData)}`,
+                        );
+                        return {
+                            ...post,
+                            insights: insightsData,
+                        };
+                    } catch (error: any) {
+                        console.error(
+                            `Error getting insights for post ${post.id}: ${error.message}`,
+                        );
+                        return {
+                            ...post,
+                            insights: [],
+                        };
+                    }
                 }),
             );
             return postsWithInsights;
