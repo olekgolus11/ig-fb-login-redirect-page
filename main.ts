@@ -65,6 +65,7 @@ router.get("/instagram-posts", async (ctx) => {
                 return fbService.getInstagramPosts(
                     account.id,
                     userData.access_token,
+                    withInsights,
                 );
             }),
         );
