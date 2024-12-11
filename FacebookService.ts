@@ -61,7 +61,7 @@ class FacebookService {
     }
 
     getWithInsightsFromSearchParams(searchParams: URLSearchParams): boolean {
-        const withInsights = searchParams.get("with_insights");
+        const withInsights = searchParams.get("insights");
         if (withInsights === "true") {
             return true;
         }
