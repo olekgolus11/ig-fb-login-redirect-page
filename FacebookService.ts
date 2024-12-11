@@ -247,7 +247,7 @@ class FacebookService {
             const postsWithInsights = await Promise.all(
                 postsData.data.map(async (post: any) => {
                     const insightsResponse = await fetch(
-                        `https://graph.facebook.com/v21.0/${post.id}/insights?metric=engagement,impressions,reach,saved&access_token=${accessToken}`,
+                        `https://graph.facebook.com/v21.0/${post.id}/insights?metric=likes,impressions,reach,comments,shares,total_interactions,follows,profile_visits,saved&access_token=${accessToken}`,
                     );
                     const insights = (await insightsResponse.json())
                         .data as InstagramInsight[];
