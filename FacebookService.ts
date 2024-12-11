@@ -251,15 +251,15 @@ class FacebookService {
                     );
                     const insights = (await insightsResponse.json())
                         .data as InstagramInsight[];
-                    console.log(
-                        `Insights Data: ${JSON.stringify(insights)}`,
-                    );
                     const insightsData = insights.map((insight) => (
                         {
                             metric: insight.title,
                             value: insight.values[0].value,
                         }
                     ));
+                    console.log(
+                        `Insights Data: ${JSON.stringify(insightsData)}`,
+                    );
                     return {
                         ...post,
                         insights: insightsData,
