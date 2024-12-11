@@ -53,6 +53,9 @@ router.get("/instagram-posts", async (ctx) => {
         const userId = fbService.getUserIdFromSearchParams(
             ctx.request.url.searchParams,
         );
+        const withInsights = fbService.getWithInsightsFromSearchParams(
+            ctx.request.url.searchParams,
+        );
         const userData = await fbService.getUserDataFromUserId(userId);
         const instagramAccountInfo = await fbService.getInstagramAccountIds(
             userData.access_token,

@@ -1,6 +1,7 @@
 import {
     FacebookConnectedPageData,
     InstagramBusinessAccountData,
+    InstagramInsight,
     InstagramUserData,
     LongLivedAccessTokenData,
     ShortLivedAccessTokenData,
@@ -57,6 +58,14 @@ class FacebookService {
             return null;
         }
         return searchType;
+    }
+
+    getWithInsightsFromSearchParams(searchParams: URLSearchParams): boolean {
+        const withInsights = searchParams.get("with_insights");
+        if (withInsights === "true") {
+            return true;
+        }
+        return false;
     }
 
     async getShortLivedTokenData(
@@ -223,12 +232,43 @@ class FacebookService {
         return userData.value;
     }
 
-    async getInstagramPosts(instagramAccountId: string, accessToken: string) {
+    async getInstagramPosts(
+        instagramAccountId: string,
+        accessToken: string,
+        withInsights = false,
+    ) {
         const postsResponse = await fetch(
             `https://graph.facebook.com/v21.0/${instagramAccountId}/media?fields=id,caption,media_url&access_token=${accessToken}`,
         );
         const postsData = await postsResponse.json();
         console.log(`Posts Data: ${JSON.stringify(postsData)}`);
+
+        if (withInsights) {
+            const postsWithInsights = await Promise.all(
+                postsData.data.map(async (post: any) => {
+                    const insightsResponse = await fetch(
+                        `https://graph.facebook.com/v21.0/${post.id}/insights?metric=engagement,impressions,reach,saved&access_token=${accessToken}`,
+                    );
+                    const insights = (await insightsResponse.json())
+                        .data as InstagramInsight[];
+                    console.log(
+                        `Insights Data: ${JSON.stringify(insights)}`,
+                    );
+                    const insightsData = insights.map((insight) => (
+                        {
+                            metric: insight.title,
+                            value: insight.values[0].value,
+                        }
+                    ));
+                    return {
+                        ...post,
+                        insights: insightsData,
+                    };
+                }),
+            );
+            return postsWithInsights;
+        }
+
         return postsData;
     }
 }

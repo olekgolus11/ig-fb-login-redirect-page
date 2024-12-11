@@ -40,3 +40,14 @@ export interface InstagramUserData {
     id: string;
     access_token: string;
 }
+
+export interface InstagramInsight {
+    name: string;
+    period: string;
+    values: {
+        value: number;
+    }[];
+    title: string;
+    description: string;
+    id: string;
+}
