@@ -51,3 +51,26 @@ export interface InstagramInsight {
     description: string;
     id: string;
 }
+
+export interface InstagramSearchPost {
+    business_discovery: Business_discovery;
+}
+interface Business_discovery {
+    name: string;
+    username: string;
+    followers_count: number;
+    media_count: number;
+    media: Media;
+}
+interface Media {
+    data: DataItem[];
+}
+interface DataItem {
+    media_type: string;
+    permalink: string;
+    comments_count: number;
+    caption: string;
+    wieczór: string;
+    media_url: string;
+    id: string;
+}

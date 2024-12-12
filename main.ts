@@ -34,9 +34,46 @@ router.get("/facebook-login", async (ctx) => {
         ctx.response.body = {
             ...userData,
         };
-    } catch (error) {
-        console.log(error);
+    } catch (error: any) {
+        console.error(error.message);
         ctx.response.body = `Error logging in with Facebook: ${
+            JSON.stringify(error)
+        }`;
+    }
+});
+
+// Get Instagram Posts Endpoint
+router.get("/instagram-user-posts", async (ctx) => {
+    try {
+        const fbService = new FacebookService(
+            Deno.env.get("APP_ID"),
+            Deno.env.get("APP_SECRET"),
+            Deno.env.get("REDIRECT_URI"),
+        );
+        const username = fbService.getUsernameFromSearchParams(
+            ctx.request.url.searchParams,
+        );
+        const adminUserId = "122105006888598400";
+        const userData = await fbService.getUserDataFromUserId(adminUserId);
+        const instagramAccountInfo = await fbService.getInstagramAccountIds(
+            userData.access_token,
+        );
+        const instagramPostsData = await Promise.all(
+            instagramAccountInfo.map((account) => {
+                return fbService.searchInstagramPostsByUsername(
+                    account.id,
+                    userData.access_token,
+                    username,
+                );
+            }),
+        );
+
+        ctx.response.body = {
+            ...instagramPostsData,
+        };
+    } catch (error: any) {
+        console.error(error.message);
+        ctx.response.body = `Error getting Instagram posts: ${
             JSON.stringify(error)
         }`;
     }
@@ -73,8 +110,8 @@ router.get("/instagram-posts", async (ctx) => {
         ctx.response.body = {
             ...instagramPostsData,
         };
-    } catch (error) {
-        console.log(error);
+    } catch (error: any) {
+        console.error(error.message);
         ctx.response.body = `Error getting Instagram posts: ${
             JSON.stringify(error)
         }`;
@@ -115,8 +152,8 @@ router.get("/instagram-posts-by-hashtag", async (ctx) => {
         ctx.response.body = {
             ...instagramPostsData,
         };
-    } catch (error) {
-        console.log(error);
+    } catch (error: any) {
+        console.error(error.message);
         ctx.response.body = `Error getting Instagram posts by hashtag: ${
             JSON.stringify(error)
         }`;

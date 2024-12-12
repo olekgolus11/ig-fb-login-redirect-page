@@ -2,6 +2,7 @@ import {
     FacebookConnectedPageData,
     InstagramBusinessAccountData,
     InstagramInsight,
+    InstagramSearchPost,
     InstagramUserData,
     LongLivedAccessTokenData,
     ShortLivedAccessTokenData,
@@ -38,6 +39,15 @@ class FacebookService {
             throw new Error("Error: No user_id provided");
         }
         return userId;
+    }
+
+    getUsernameFromSearchParams(searchParams: URLSearchParams): string {
+        const username = searchParams.get("username");
+        if (!username) {
+            console.error(searchParams);
+            throw new Error("Error: No username provided");
+        }
+        return username;
     }
 
     getQueryFromSearchParams(searchParams: URLSearchParams): string {
@@ -230,6 +240,21 @@ class FacebookService {
             throw new Error("Error: User not found");
         }
         return userData.value;
+    }
+
+    async searchInstagramPostsByUsername(
+        instagramAccountId: string,
+        accessToken: string,
+        username: string,
+    ) {
+        const postsResponse = await fetch(
+            `https://graph.facebook.com/v21.0/${instagramAccountId}?fields=business_discovery.username(m_rozenek){name,username,followers_count,media_count,media{media_type,permalink,comments_count,like_count,caption,media_url}}`,
+        );
+        const postsData = (await postsResponse.json())
+            .data as InstagramSearchPost;
+        console.log(`Posts data: ${JSON.stringify(postsData)}`);
+
+        return postsData;
     }
 
     async getInstagramPosts(
