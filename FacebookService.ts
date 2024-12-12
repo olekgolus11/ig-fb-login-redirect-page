@@ -248,7 +248,7 @@ class FacebookService {
         username: string,
     ) {
         const postsResponse = await fetch(
-            `https://graph.facebook.com/v21.0/${instagramAccountId}?fields=business_discovery.username(${username}){name,username,followers_count,media_count,media{media_type,permalink,comments_count,like_count,caption,media_url}}&access_token=${accessToken}`,
+            `https://graph.facebook.com/v21.0/${instagramAccountId}?fields=business_discovery.username(${username}){name,username,followers_count,media_count,media{media_type,permalink,comments_count,like_count,caption,media_url}}&access_token=EAAcXl4p2f6gBOZBUH3d0qNkZCfH0Na8hcPy75pGUgLeNKNipTte7NMGYA57HgxRElsZC7cI2ZCFjohc0kwYZBt5pzAIHEF6d9uRIiTpZBElzj81B6t95q4spCZBCdtChSseZAohLGdEnwpjAgtqRXxzoCZBOtZCe9JN0PZBbGzKhE6YOD7u5o8NhcZATLYQ1RAVt9Xw9ZAhMdJERrg1S7NE5HBppRfJTGLwZDZD`,
         );
         const postsData = (await postsResponse.json())
             .data as InstagramSearchPost;
