@@ -252,7 +252,7 @@ class FacebookService {
         );
         console.log(
             await (await fetch(
-                `https://graph.facebook.com/v21.0/${instagramAccountId}?access_token=${accessToken}`,
+                `https://graph.facebook.com/v21.0/${instagramAccountId}?access_token=${accessToken}&fields=business_discovery.username(${username})`,
             )).json(),
         );
         const postsResponse = await fetch(
