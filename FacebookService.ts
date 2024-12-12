@@ -248,7 +248,7 @@ class FacebookService {
         username: string,
     ) {
         const postsResponse = await fetch(
-            `https://graph.facebook.com/v21.0/${instagramAccountId}?fields=business_discovery.username(m_rozenek){name,username,followers_count,media_count,media{media_type,permalink,comments_count,like_count,caption,media_url}}`,
+            `https://graph.facebook.com/v21.0/${instagramAccountId}?fields=business_discovery.username(${username}){name,username,followers_count,media_count,media{media_type,permalink,comments_count,like_count,caption,media_url}}&access_token=${accessToken}`,
         );
         const postsData = (await postsResponse.json())
             .data as InstagramSearchPost;
